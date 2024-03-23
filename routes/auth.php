@@ -12,8 +12,25 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-                ->name('register');
+    // Route::get('register', [RegisteredUserController::class, 'create'])
+    //             ->name('register');
+    /**
+     **最初のメール入力画面を表示するルーティング
+     */
+    Route::get('first-auth', [RegisteredUserController::class, 'create'])
+        ->name('auth.first-auth'); // 追加
+
+    /**
+     **トークンを含んだメールを送信するルーティング
+     */
+    Route::post('sendTokenEmail', [RegisteredUserController::class, 'sendTokenEmail'])
+    ->name('sendTokenEmail');
+    /**
+     **ワンタイムトークンが正しいか確かめてログインさせるルーティング
+     */
+    Route::post('login', [RegisteredUserController::class, 'auth'])
+    ->name('login'); // 追加
+
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
