@@ -31,46 +31,60 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [RegisteredUserController::class, 'auth'])
     ->name('login'); // 追加
 
-
+    // ユーザー登録処理のルーティング
     Route::post('register', [RegisteredUserController::class, 'store']);
 
+    // ログイン画面の表示
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
                 ->name('login');
 
+    // ログイン処理のルーティング
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
+    // パスワードリセットリンク要求画面の表示
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
                 ->name('password.request');
 
+    // パスワードリセットリンクの送信処理
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
                 ->name('password.email');
 
+    // パスワードリセット画面の表示
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
                 ->name('password.reset');
 
+    // パスワードリセット処理
     Route::post('reset-password', [NewPasswordController::class, 'store'])
                 ->name('password.store');
 });
 
+    // ログイン済みのユーザーのみアクセス可能なルート群
 Route::middleware('auth')->group(function () {
+    // メール認証画面の表示
     Route::get('verify-email', EmailVerificationPromptController::class)
                 ->name('verification.notice');
 
+    // メールアドレスの確認処理
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
                 ->middleware(['signed', 'throttle:6,1'])
                 ->name('verification.verify');
 
+    // メール認証通知の再送信処理
     Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
                 ->middleware('throttle:6,1')
                 ->name('verification.send');
 
+    // パスワード確認画面の表示
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
                 ->name('password.confirm');
 
+    // パスワード確認処理
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
+    //パスワード変更処理
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 
+    // ログアウト処理
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-                ->name('logout');
+        ->name('logout');
 });
