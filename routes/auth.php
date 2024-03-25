@@ -35,11 +35,11 @@ Route::middleware('guest')->group(function () {
     // このルートは、ユーザーが認証されかつメールアドレスが確認されている場合にのみアクセス可能です。
     Route::get('/dashboard', function () {
         return view('dashboard');
-    })->middleware(['auth', 'verified'])->name('dashboard');
+    })->name('dashboard');
     Route::post('/dashboard', function () {
         //以降はここに会員登録のサイトを表示させるように実装していく
         return view('auth.register');
-    })->middleware(['auth', 'verified'])->name('register');
+    })->name('register');
 
 
 
