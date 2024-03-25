@@ -102,9 +102,8 @@ class RegisteredUserController extends Controller
 
         if ($user['onetime_token'] == $request->onetime_token && $expiration > now()) {
             Auth::login($user);
-            return redirect()->route('dashboard');
+            return redirect()->route('RouteServiceProvider::HOME');
         }
-        Log::debug('message');
         return redirect()->route('auth.first-auth');
     }
 }

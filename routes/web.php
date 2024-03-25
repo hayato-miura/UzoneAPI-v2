@@ -14,6 +14,11 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+Route::post('/dashboard', function () {
+
+    //以降はここに会員登録のサイトを表示させるように実装していく
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 
 // 認証されたユーザーのみがアクセスできるルートグループです。
