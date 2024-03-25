@@ -1,10 +1,13 @@
 <?php
 
+// 名前空間の定義。Auth関連のコントローラーをグループ化して整理。
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\VerifiesEmails;
+// 必要なクラスのインポート。
+use App\Http\Controllers\Controller; // Laravelの基本コントローラクラスを継承。
+use Illuminate\Foundation\Auth\VerifiesEmails; // メール認証機能を提供するトレイト。
 
+// VerificationControllerクラスの定義。Controllerクラスを継承。
 class VerificationController extends Controller
 {
     /*
@@ -12,30 +15,30 @@ class VerificationController extends Controller
     | Email Verification Controller
     |--------------------------------------------------------------------------
     |
-    | This controller is responsible for handling email verification for any
-    | user that recently registered with the application. Emails may also
-    | be re-sent if the user didn't receive the original email message.
+    | このコントローラーは、アプリケーションに最近登録したユーザーのメールアドレスの
+    | 認証を処理するために責任を持ちます。元のメールメッセージを受け取らなかったユーザーに
+    | メールを再送することも可能です。
     |
     */
 
-    use VerifiesEmails;
+    use VerifiesEmails; // メール認証機能をこのコントローラーに追加。
 
     /**
-     * Where to redirect users after verification.
+     * 認証後にユーザーをリダイレクトする先。
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/home'; // ユーザーを認証後に'/home'にリダイレクトする。
 
     /**
-     * Create a new controller instance.
+     * 新しいコントローラインスタンスを作成。
      *
      * @return void
      */
     public function __construct()
     {
-        $this->middleware('auth');
-        $this->middleware('signed')->only('verify');
-        $this->middleware('throttle:6,1')->only('verify', 'resend');
+        $this->middleware('auth'); // 'auth'ミドルウェアを適用し、認証済みユーザーのみがアクセス可能に。
+        $this->middleware('signed')->only('verify'); // 'verify'メソッドにのみ'signed'ミドルウェアを適用し、安全なURLからのアクセスを保証。
+        $this->middleware('throttle:6,1')->only('verify', 'resend'); // 'verify'と'resend'メソッドにレートリミットを適用し、1分間に6回までの制限。
     }
 }

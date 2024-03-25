@@ -31,6 +31,19 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [RegisteredUserController::class, 'auth'])
     ->name('login'); // 追加
 
+    // '/dashboard'へのGETリクエストに対して、ダッシュボードビューを表示します。
+    // このルートは、ユーザーが認証されかつメールアドレスが確認されている場合にのみアクセス可能です。
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->middleware(['auth', 'verified'])->name('dashboard');
+    Route::post('/dashboard', function () {
+        //以降はここに会員登録のサイトを表示させるように実装していく
+        return view('auth.register');
+    })->middleware(['auth', 'verified'])->name('register');
+
+
+
+
     // ユーザー登録処理のルーティング
     Route::post('register', [RegisteredUserController::class, 'store']);
 
