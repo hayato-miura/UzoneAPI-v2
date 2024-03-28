@@ -91,7 +91,7 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * ワンタイムトークンが正しいか確認して、その結果に基づいてユーザーをログインさせるメソッドです。
+     * ワンタイムトークンが正しいか確認して、会員情報登録画面に飛ばすメゾットです。
      * @param Request $request HTTPリクエスト。ユーザーが入力したワンタイムトークンを含む。
      * @return RedirectResponse ユーザーを適切なページにリダイレクトします。
      */
@@ -105,11 +105,10 @@ class RegisteredUserController extends Controller
         // ユーザーが入力したトークンが正しく、かつ有効期限内であるか確認。
         if ($user['onetime_token'] == $request->onetime_token && $expiration > now()) {
             // 条件を満たした場合、ユーザーをログインさせる。
-            Auth::login($user);
+            // Auth::login($user);
             // ログイン後、ユーザーをホームページにリダイレクトさせる。
             return redirect()->route('RouteServiceProvider::HOME');
             // デバッグメッセージ（現在コメントアウトされています）。
-            // Log::debug('message');
         }
         // トークンが無効な場合、ユーザーを認証の最初の段階に戻す。
         return redirect()->route('auth.first-auth');
@@ -126,17 +125,28 @@ class RegisteredUserController extends Controller
         // 新規登録フォームからの入力値に対するバリデーションルールを定義しています。
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // バリデーションが通れば、ユーザーモデルを新規作成します。
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        // 与えられたメールアドレスを持つユーザーが存在するか確認
+        $user = User::where('email', $request->email)->first();
 
+        // dd('message');
+        if ($user) {
+            // ユーザーが存在する場合、情報を更新
+            $user->update([
+                'name' => $request->name,
+                'password' => Hash::make($request->password),
+            ]);
+        } else {
+            // ユーザーが存在しない場合、新しいレコードを作成
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+        }
         // 新規登録イベントを発火させます。リスナーで追加の処理を行うことが可能です。
         event(new Registered($user));
 

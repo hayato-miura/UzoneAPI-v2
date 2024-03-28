@@ -12,8 +12,7 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    // Route::get('register', [RegisteredUserController::class, 'create'])
-    //             ->name('register');
+
     /**
      **最初のメール入力画面を表示するルーティング
      */
@@ -32,14 +31,19 @@ Route::middleware('guest')->group(function () {
     ->name('login'); // 追加
 
     // '/dashboard'へのGETリクエストに対して、ダッシュボードビューを表示します。
-    // このルートは、ユーザーが認証されかつメールアドレスが確認されている場合にのみアクセス可能です。
     Route::get('/dashboard', function () {
         return view('dashboard');
+        // dd('aaa');どうやここは通過していないみたい
     })->name('dashboard');
+
     Route::post('/dashboard', function () {
-        //以降はここに会員登録のサイトを表示させるように実装していく
         return view('auth.register');
-    })->name('register');
+        //正常に動いていることを確認済み
+    });
+
+    Route::get('register', [RegisteredUserController::class, 'create'])
+        ->name('register');
+
 
 
 

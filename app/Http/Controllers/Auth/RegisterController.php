@@ -54,7 +54,7 @@ class RegisterController extends Controller
         // 登録フォームから送信されたデータに対するバリデーションルールを定義。
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'], // 名前は必須、文字列、最大255文字。
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'], // メールアドレスは必須、文字列、メール形式、最大255文字、usersテーブル内でユニーク。
+            'email' => ['required', 'string', 'email', 'max:255'], // メールアドレスは必須、文字列、メール形式、最大255文字、usersテーブル内でユニーク。
             'password' => ['required', 'string', 'min:8', 'confirmed'], // パスワードは必須、文字列、最小8文字、確認用パスワードと一致する必要がある。
         ]);
     }
@@ -65,13 +65,36 @@ class RegisterController extends Controller
      * @param  array  $data
      * @return \App\Models\User
      */
+    // protected function create(array $data)
+    // {
+    //     // Userモデルを使用して新しいユーザーレコードをデータベースに作成。
+    //     return User::create([
+    //         'name' => $data['name'], // ユーザー名
+    //         'email' => $data['email'], // メールアドレス
+    //         'password' => Hash::make($data['password']), // パスワード（ハッシュ化）
+    //     ]);
+    // }
     protected function create(array $data)
     {
-        // Userモデルを使用して新しいユーザーレコードをデータベースに作成。
-        return User::create([
-            'name' => $data['name'], // ユーザー名
-            'email' => $data['email'], // メールアドレス
-            'password' => Hash::make($data['password']), // パスワード（ハッシュ化）
-        ]);
+
+        // メールアドレスに基づいて既存のユーザーを検索
+        $user = User::where('email', $data['email'])->first();
+
+        if ($user) {
+            // 既存のユーザーが見つかった場合、名前とパスワードを更新
+            $user->name = $data['name'];
+            $user->password = Hash::make($data['password']);
+            $user->save(); // 変更を保存
+        } else {
+            // 既存のユーザーが見つからない場合、新しいユーザーを作成
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+            ]);
+        }
+        dd($data);
+        return $user;
     }
+
 }
