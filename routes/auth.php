@@ -25,29 +25,21 @@ Route::middleware('guest')->group(function () {
     Route::post('sendTokenEmail', [RegisteredUserController::class, 'sendTokenEmail'])
     ->name('sendTokenEmail');
     /**
-     **ワンタイムトークンが正しいか確かめてログインさせるルーティング
+     **ワンタイムトークンが正しいか確かめて会員情報登録に遷移させるルーティング
      */
-    Route::post('login', [RegisteredUserController::class, 'auth'])
-    ->name('login'); // 追加
+    Route::post('login', [RegisteredUserController::class, 'auth']);
 
-    // '/dashboard'へのGETリクエストに対して、ダッシュボードビューを表示します。
+    // // '/dashboard'へのGETリクエストに対して、ダッシュボードビューを表示します。
     Route::get('/dashboard', function () {
         return view('dashboard');
-        // dd('aaa');どうやここは通過していないみたい
     })->name('dashboard');
 
     Route::post('/dashboard', function () {
         return view('auth.register');
-        //正常に動いていることを確認済み
     });
 
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
-
-
-
-
-
     // ユーザー登録処理のルーティング
     Route::post('register', [RegisteredUserController::class, 'store']);
 
@@ -77,6 +69,7 @@ Route::middleware('guest')->group(function () {
 
     // ログイン済みのユーザーのみアクセス可能なルート群
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [RegisteredUserController::class, 'dashboard'])->name('dashboard');
     // メール認証画面の表示
     Route::get('verify-email', EmailVerificationPromptController::class)
                 ->name('verification.notice');
@@ -105,3 +98,7 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 });
+
+// 共通ルート（認証状態に依存しない）
+Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
+Route::post('login', [AuthenticatedSessionController::class, 'store']);

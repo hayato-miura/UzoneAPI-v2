@@ -19,6 +19,11 @@ use Illuminate\Support\Facades\Log;
 
 class RegisteredUserController extends Controller
 {
+    public function dashboard(): View
+    {
+        return view('dashboard');
+    }
+
     /**
      * Display the registration view.
      * @return View 登録画面のビュー
@@ -66,6 +71,7 @@ class RegisteredUserController extends Controller
      */
     public function sendTokenEmail(Request $request)
     {
+        
         $email = $request->email;
         $onetime_token = "";
 
@@ -106,8 +112,8 @@ class RegisteredUserController extends Controller
         if ($user['onetime_token'] == $request->onetime_token && $expiration > now()) {
             // 条件を満たした場合、ユーザーをログインさせる。
             // Auth::login($user);
-            // ログイン後、ユーザーをホームページにリダイレクトさせる。
-            return redirect()->route('RouteServiceProvider::HOME');
+            // ログイン後、会員情報登録に遷移させる
+            return view('auth.register');
             // デバッグメッセージ（現在コメントアウトされています）。
         }
         // トークンが無効な場合、ユーザーを認証の最初の段階に戻す。
