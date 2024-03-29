@@ -9,21 +9,12 @@ Route::get('/', function () {
 });
 
 
-// '/dashboard'へのGETリクエストに対して、ダッシュボードビューを表示します。
-// このルートは、ユーザーが認証されかつメールアドレスが確認されている場合にのみアクセス可能です。
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-Route::post('/dashboard', function () {
 
-    //以降はここに会員登録のサイトを表示させるように実装していく
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 
 // 認証されたユーザーのみがアクセスできるルートグループです。
 Route::middleware('auth')->group(function () {
-     // プロファイル編集ページを表示するためのルート。
+    // プロファイル編集ページを表示するためのルート。
     // '/profile'へのGETリクエストを処理し、ProfileControllerのeditメソッドを呼び出します。
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
 

@@ -19,6 +19,11 @@ use Illuminate\Support\Facades\Log;
 
 class RegisteredUserController extends Controller
 {
+    public function dashboard(): View
+    {
+        return view('dashboard');
+    }
+
     /**
      * Display the registration view.
      * @return View 登録画面のビュー
@@ -61,11 +66,12 @@ class RegisteredUserController extends Controller
     }
     /**
      **ワンタイムトークンが含まれるメールを送信する
-    * @param Request $request HTTPリクエスト
+     * @param Request $request HTTPリクエスト
      * @return View 認証の第二段階のビュー
      */
     public function sendTokenEmail(Request $request)
     {
+        
         $email = $request->email;
         $onetime_token = "";
 
@@ -76,7 +82,7 @@ class RegisteredUserController extends Controller
 
         $user = User::where('email', $email)->first(); // 受け取ったメールアドレスで検索
         if ($user === null) {
-             // ユーザーが存在しない場合、新しいレコードを作成します。
+            // ユーザーが存在しない場合、新しいレコードを作成します。
             RegisteredUserController::storeEmailAndToken($email, $onetime_token, $onetime_expiration);
         } else {
             // ユーザーが既に存在する場合、トークンと有効期限を更新します。
@@ -91,46 +97,69 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     **ワンタイムトークンが正しいか確かめてログインさせる
-     * @param Request $request HTTPリクエスト
-     * @return RedirectResponse ダッシュボードへのリダイレクト、または認証の最初の段階へのリダイレクト
+     * ワンタイムトークンが正しいか確認して、会員情報登録画面に飛ばすメゾットです。
+     * @param Request $request HTTPリクエスト。ユーザーが入力したワンタイムトークンを含む。
+     * @return RedirectResponse ユーザーを適切なページにリダイレクトします。
      */
     public function auth(Request $request): RedirectResponse
     {
+        // セッションに保存されたメールアドレスを使用してユーザーを検索。
         $user = User::where('email', session('email'))->first();
+        // ユーザーのワンタイムトークンの有効期限を確認。
         $expiration = new Carbon($user['onetime_token']);
 
+        // ユーザーが入力したトークンが正しく、かつ有効期限内であるか確認。
         if ($user['onetime_token'] == $request->onetime_token && $expiration > now()) {
-            Auth::login($user);
-            return redirect()->route('RouteServiceProvider::HOME');
+            // 条件を満たした場合、ユーザーをログインさせる。
+            // Auth::login($user);
+            // ログイン後、会員情報登録に遷移させる
+            return view('auth.register');
+            // デバッグメッセージ（現在コメントアウトされています）。
         }
+        // トークンが無効な場合、ユーザーを認証の最初の段階に戻す。
         return redirect()->route('auth.first-auth');
     }
+
+    /**
+     * 新規登録リクエストを処理するメソッドです。
+     * @param Request $request HTTPリクエスト。新規登録に必要なユーザー情報を含む。
+     * @throws \Illuminate\Validation\ValidationException バリデーションに失敗した場合に投げられる例外。
+     * @return RedirectResponse 登録後にユーザーをダッシュボードへリダイレクトします。
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        // 新規登録フォームからの入力値に対するバリデーションルールを定義しています。
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+
+        // 与えられたメールアドレスを持つユーザーが存在するか確認
+        $user = User::where('email', $request->email)->first();
+
+        // dd('message');
+        if ($user) {
+            // ユーザーが存在する場合、情報を更新
+            $user->update([
+                'name' => $request->name,
+                'password' => Hash::make($request->password),
+            ]);
+        } else {
+            // ユーザーが存在しない場合、新しいレコードを作成
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+            ]);
+        }
+        // 新規登録イベントを発火させます。リスナーで追加の処理を行うことが可能です。
+        event(new Registered($user));
+
+        // 新規登録後、自動的にログインさせます。
+        Auth::login($user);
+
+        // ユーザーをダッシュボードにリダイレクトさせます。
+        return redirect(route('dashboard', absolute: false));
+    }
 }
-
-//     /**
-//      * Handle an incoming registration request.
-//      *
-//      * @throws \Illuminate\Validation\ValidationException
-//      */
-//     public function store(Request $request): RedirectResponse
-//     {
-//         $request->validate([
-//             'name' => ['required', 'string', 'max:255'],
-//             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-//             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-//         ]);
-
-//         $user = User::create([
-//             'name' => $request->name,
-//             'email' => $request->email,
-//             'password' => Hash::make($request->password),
-//         ]);
-
-//         event(new Registered($user));
-
-//         Auth::login($user);
-
-//         return redirect(route('dashboard', absolute: false));
-//     }
-// }
